@@ -1,0 +1,1049 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b5fcab87-609f-43d4-b00b-d89b57ba33b1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "##list partitioning : "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "890a6ca7-c42e-48b6-b8ac-1c8a4dc8e49d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%load_ext sql"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "b2cf8074-c314-4239-ae6e-2024637b381f",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "env: DATABASE_URL=postgresql://mako:mako@pg.itversity.com:5432/mako\n"
+     ]
+    }
+   ],
+   "source": [
+    "##database \n",
+    "%env DATABASE_URL=postgresql://mako:mako@pg.itversity.com:5432/mako"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "810038f5-c1fa-4770-b017-ef222a9e1647",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "SyntaxError",
+     "evalue": "invalid syntax (3935162417.py, line 3)",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;36m  Input \u001b[0;32mIn [13]\u001b[0;36m\u001b[0m\n\u001b[0;31m    CREATE TABLE users\u001b[0m\n\u001b[0m           ^\u001b[0m\n\u001b[0;31mSyntaxError\u001b[0m\u001b[0;31m:\u001b[0m invalid syntax\n"
+     ]
+    }
+   ],
+   "source": [
+    "## Default partition \n",
+    "%%sql \n",
+    "CREATE TABLE users\n",
+    "PARTITION OF users DEFAULT"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "961f37f0-edbc-4d6e-90a9-5c06f57cc2b4",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "\n",
+    "CREATE TABLE users_part (\n",
+    "    user_id SERIAL,\n",
+    "    user_first_name VARCHAR(30) NOT NULL,\n",
+    "    user_last_name VARCHAR(30) NOT NULL,\n",
+    "    user_email_id VARCHAR(50) NOT NULL,\n",
+    "    user_email_validated BOOLEAN DEFAULT FALSE,\n",
+    "    user_password VARCHAR(200),\n",
+    "    user_role VARCHAR(1) NOT NULL DEFAULT 'U', --U and A\n",
+    "    is_active BOOLEAN DEFAULT FALSE,\n",
+    "    created_dt DATE DEFAULT CURRENT_DATE,\n",
+    "    last_updated_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n",
+    "    PRIMARY KEY (user_role, user_id)\n",
+    ") PARTITION BY LIST(user_role)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "b10a401e-6b37-438a-87f3-a5f991a4d295",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "\n",
+    "CREATE TABLE users_part_default\n",
+    "PARTITION OF users_part DEFAULT"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "7aea0ae3-51e8-4f25-8249-a73a0093c590",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "3 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 18,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "\n",
+    "INSERT INTO users_part (user_first_name, user_last_name, user_email_id, user_role)\n",
+    "VALUES \n",
+    "    ('Scott', 'Tiger', 'scott@tiger.com', 'U'),\n",
+    "    ('Donald', 'Duck', 'donald@duck.com', 'U'),\n",
+    "    ('Mickey', 'Mouse', 'mickey@mouse.com', 'U')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "4316fa89-9fdb-4e8d-9d05-f580b3de2428",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "3 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>user_id</th>\n",
+       "        <th>user_first_name</th>\n",
+       "        <th>user_last_name</th>\n",
+       "        <th>user_email_id</th>\n",
+       "        <th>user_email_validated</th>\n",
+       "        <th>user_password</th>\n",
+       "        <th>user_role</th>\n",
+       "        <th>is_active</th>\n",
+       "        <th>created_dt</th>\n",
+       "        <th>last_updated_ts</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1</td>\n",
+       "        <td>Scott</td>\n",
+       "        <td>Tiger</td>\n",
+       "        <td>scott@tiger.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>U</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2</td>\n",
+       "        <td>Donald</td>\n",
+       "        <td>Duck</td>\n",
+       "        <td>donald@duck.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>U</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>3</td>\n",
+       "        <td>Mickey</td>\n",
+       "        <td>Mouse</td>\n",
+       "        <td>mickey@mouse.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>U</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(1, 'Scott', 'Tiger', 'scott@tiger.com', False, None, 'U', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612)),\n",
+       " (2, 'Donald', 'Duck', 'donald@duck.com', False, None, 'U', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612)),\n",
+       " (3, 'Mickey', 'Mouse', 'mickey@mouse.com', False, None, 'U', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612))]"
+      ]
+     },
+     "execution_count": 19,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql select * from users_part"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "id": "78aeca96-709b-43c5-a7c6-179f983b9136",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 24,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql \n",
+    "CREATE TABLE users_part_a \n",
+    "PARTITION OF users_part  \n",
+    "FOR VALUES IN ('A')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "id": "2c021a58-3422-44e2-a98e-b7720e239818",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 25,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql \n",
+    "update users_part \n",
+    "set user_role ='A'\n",
+    "where user_id = 1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "id": "d5540400-3ffb-485e-98db-d85fa8ad5175",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "3 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>user_id</th>\n",
+       "        <th>user_first_name</th>\n",
+       "        <th>user_last_name</th>\n",
+       "        <th>user_email_id</th>\n",
+       "        <th>user_email_validated</th>\n",
+       "        <th>user_password</th>\n",
+       "        <th>user_role</th>\n",
+       "        <th>is_active</th>\n",
+       "        <th>created_dt</th>\n",
+       "        <th>last_updated_ts</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1</td>\n",
+       "        <td>Scott</td>\n",
+       "        <td>Tiger</td>\n",
+       "        <td>scott@tiger.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>A</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2</td>\n",
+       "        <td>Donald</td>\n",
+       "        <td>Duck</td>\n",
+       "        <td>donald@duck.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>U</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>3</td>\n",
+       "        <td>Mickey</td>\n",
+       "        <td>Mouse</td>\n",
+       "        <td>mickey@mouse.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>U</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(1, 'Scott', 'Tiger', 'scott@tiger.com', False, None, 'A', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612)),\n",
+       " (2, 'Donald', 'Duck', 'donald@duck.com', False, None, 'U', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612)),\n",
+       " (3, 'Mickey', 'Mouse', 'mickey@mouse.com', False, None, 'U', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612))]"
+      ]
+     },
+     "execution_count": 26,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql select * from users_part"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "id": "9fc28596-46b0-43f0-b159-c893cad0f76c",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>user_id</th>\n",
+       "        <th>user_first_name</th>\n",
+       "        <th>user_last_name</th>\n",
+       "        <th>user_email_id</th>\n",
+       "        <th>user_email_validated</th>\n",
+       "        <th>user_password</th>\n",
+       "        <th>user_role</th>\n",
+       "        <th>is_active</th>\n",
+       "        <th>created_dt</th>\n",
+       "        <th>last_updated_ts</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1</td>\n",
+       "        <td>Scott</td>\n",
+       "        <td>Tiger</td>\n",
+       "        <td>scott@tiger.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>A</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(1, 'Scott', 'Tiger', 'scott@tiger.com', False, None, 'A', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612))]"
+      ]
+     },
+     "execution_count": 27,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql select * from users_part_a"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "id": "6a95a830-9901-4c17-a814-b5a26bc0c514",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 36,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql \n",
+    "CREATE TABLE users_part_ismail \n",
+    "PARTITION OF users_part  \n",
+    "FOR VALUES IN ('I')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "id": "1109e1a5-e63d-4516-add5-eb258f806897",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 37,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql \n",
+    "update users_part \n",
+    "set user_role ='I'\n",
+    "where user_id = 2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "id": "a0ec81a1-0d55-4643-a076-0c54e566e069",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>user_id</th>\n",
+       "        <th>user_first_name</th>\n",
+       "        <th>user_last_name</th>\n",
+       "        <th>user_email_id</th>\n",
+       "        <th>user_email_validated</th>\n",
+       "        <th>user_password</th>\n",
+       "        <th>user_role</th>\n",
+       "        <th>is_active</th>\n",
+       "        <th>created_dt</th>\n",
+       "        <th>last_updated_ts</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2</td>\n",
+       "        <td>Donald</td>\n",
+       "        <td>Duck</td>\n",
+       "        <td>donald@duck.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>I</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(2, 'Donald', 'Duck', 'donald@duck.com', False, None, 'I', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612))]"
+      ]
+     },
+     "execution_count": 38,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql select * from users_part_ismail"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "id": "12d22eec-2364-4b30-b7b8-5179c9fae047",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 41,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql\n",
+    "ALTER TABLE users_part\n",
+    "DETACH PARTITION users_part_ismail"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "id": "3906b127-96f0-424a-bb6b-2d09c9ad852d",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>user_id</th>\n",
+       "        <th>user_first_name</th>\n",
+       "        <th>user_last_name</th>\n",
+       "        <th>user_email_id</th>\n",
+       "        <th>user_email_validated</th>\n",
+       "        <th>user_password</th>\n",
+       "        <th>user_role</th>\n",
+       "        <th>is_active</th>\n",
+       "        <th>created_dt</th>\n",
+       "        <th>last_updated_ts</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1</td>\n",
+       "        <td>Scott</td>\n",
+       "        <td>Tiger</td>\n",
+       "        <td>scott@tiger.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>A</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(1, 'Scott', 'Tiger', 'scott@tiger.com', False, None, 'A', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612))]"
+      ]
+     },
+     "execution_count": 43,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql select * from users_part"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 66,
+   "id": "be919218-558f-4887-9045-931f6c94e3eb",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>user_id</th>\n",
+       "        <th>user_first_name</th>\n",
+       "        <th>user_last_name</th>\n",
+       "        <th>user_email_id</th>\n",
+       "        <th>user_email_validated</th>\n",
+       "        <th>user_password</th>\n",
+       "        <th>user_role</th>\n",
+       "        <th>is_active</th>\n",
+       "        <th>created_dt</th>\n",
+       "        <th>last_updated_ts</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>2</td>\n",
+       "        <td>Donald</td>\n",
+       "        <td>Duck</td>\n",
+       "        <td>donald@duck.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>U</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(2, 'Donald', 'Duck', 'donald@duck.com', False, None, 'U', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612))]"
+      ]
+     },
+     "execution_count": 66,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql select * from users_part_ismail"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 64,
+   "id": "96fcced7-2a03-4150-9a03-519d41842761",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 64,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql update users_part_ismail set  user_role ='U'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 65,
+   "id": "ae82bca9-32b4-4473-a28e-3de10d4ca71d",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>user_id</th>\n",
+       "        <th>user_first_name</th>\n",
+       "        <th>user_last_name</th>\n",
+       "        <th>user_email_id</th>\n",
+       "        <th>user_email_validated</th>\n",
+       "        <th>user_password</th>\n",
+       "        <th>user_role</th>\n",
+       "        <th>is_active</th>\n",
+       "        <th>created_dt</th>\n",
+       "        <th>last_updated_ts</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>3</td>\n",
+       "        <td>Mickey</td>\n",
+       "        <td>Mouse</td>\n",
+       "        <td>mickey@mouse.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>U</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(3, 'Mickey', 'Mouse', 'mickey@mouse.com', False, None, 'U', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612))]"
+      ]
+     },
+     "execution_count": 65,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql select * from users_part_default"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 48,
+   "id": "3f06019d-0627-4129-b4ba-1ee6706a1875",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "Done.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 48,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%%sql \n",
+    "CREATE TABLE users_part_general\n",
+    "PARTITION OF users_part \n",
+    "FOR VALUES IN ('G')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "id": "64175312-e4d9-4df5-ba19-8a62ad641ddf",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "0 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>user_id</th>\n",
+       "        <th>user_first_name</th>\n",
+       "        <th>user_last_name</th>\n",
+       "        <th>user_email_id</th>\n",
+       "        <th>user_email_validated</th>\n",
+       "        <th>user_password</th>\n",
+       "        <th>user_role</th>\n",
+       "        <th>is_active</th>\n",
+       "        <th>created_dt</th>\n",
+       "        <th>last_updated_ts</th>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 49,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql select * from users_part_general"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 54,
+   "id": "eeaddbc0-3fd4-470b-bce7-de56a9e3e57e",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n"
+     ]
+    },
+    {
+     "ename": "IntegrityError",
+     "evalue": "(psycopg2.errors.CheckViolation) new row for relation \"users_part_general\" violates partition constraint\nDETAIL:  Failing row contains (1, Scott, Tiger, scott@tiger.com, f, null, A, f, 2022-08-17, 2022-08-17 06:38:59.065612).\n\n[SQL: INSERT INTO users_part_general select * from users_part]\n(Background on this error at: https://sqlalche.me/e/14/gkpj)",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mCheckViolation\u001b[0m                            Traceback (most recent call last)",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1799\u001b[0m, in \u001b[0;36mConnection._execute_context\u001b[0;34m(self, dialect, constructor, statement, parameters, execution_options, *args, **kw)\u001b[0m\n\u001b[1;32m   1798\u001b[0m     \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m evt_handled:\n\u001b[0;32m-> 1799\u001b[0m         \u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mdialect\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mdo_execute\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m   1800\u001b[0m \u001b[43m            \u001b[49m\u001b[43mcursor\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mstatement\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mparameters\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mcontext\u001b[49m\n\u001b[1;32m   1801\u001b[0m \u001b[43m        \u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m   1803\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39m_has_events \u001b[38;5;129;01mor\u001b[39;00m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mengine\u001b[38;5;241m.\u001b[39m_has_events:\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/engine/default.py:717\u001b[0m, in \u001b[0;36mDefaultDialect.do_execute\u001b[0;34m(self, cursor, statement, parameters, context)\u001b[0m\n\u001b[1;32m    716\u001b[0m \u001b[38;5;28;01mdef\u001b[39;00m \u001b[38;5;21mdo_execute\u001b[39m(\u001b[38;5;28mself\u001b[39m, cursor, statement, parameters, context\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mNone\u001b[39;00m):\n\u001b[0;32m--> 717\u001b[0m     \u001b[43mcursor\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mexecute\u001b[49m\u001b[43m(\u001b[49m\u001b[43mstatement\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mparameters\u001b[49m\u001b[43m)\u001b[49m\n",
+      "\u001b[0;31mCheckViolation\u001b[0m: new row for relation \"users_part_general\" violates partition constraint\nDETAIL:  Failing row contains (1, Scott, Tiger, scott@tiger.com, f, null, A, f, 2022-08-17, 2022-08-17 06:38:59.065612).\n",
+      "\nThe above exception was the direct cause of the following exception:\n",
+      "\u001b[0;31mIntegrityError\u001b[0m                            Traceback (most recent call last)",
+      "Input \u001b[0;32mIn [54]\u001b[0m, in \u001b[0;36m<cell line: 1>\u001b[0;34m()\u001b[0m\n\u001b[0;32m----> 1\u001b[0m \u001b[43mget_ipython\u001b[49m\u001b[43m(\u001b[49m\u001b[43m)\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mrun_cell_magic\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;124;43m'\u001b[39;49m\u001b[38;5;124;43msql\u001b[39;49m\u001b[38;5;124;43m'\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;124;43m'\u001b[39;49m\u001b[38;5;124;43m'\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;124;43m'\u001b[39;49m\u001b[38;5;124;43mINSERT INTO users_part_general\u001b[39;49m\u001b[38;5;130;43;01m\\n\u001b[39;49;00m\u001b[38;5;124;43mselect * from users_part\u001b[39;49m\u001b[38;5;130;43;01m\\n\u001b[39;49;00m\u001b[38;5;124;43m'\u001b[39;49m\u001b[43m)\u001b[49m\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/IPython/core/interactiveshell.py:2358\u001b[0m, in \u001b[0;36mInteractiveShell.run_cell_magic\u001b[0;34m(self, magic_name, line, cell)\u001b[0m\n\u001b[1;32m   2356\u001b[0m \u001b[38;5;28;01mwith\u001b[39;00m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mbuiltin_trap:\n\u001b[1;32m   2357\u001b[0m     args \u001b[38;5;241m=\u001b[39m (magic_arg_s, cell)\n\u001b[0;32m-> 2358\u001b[0m     result \u001b[38;5;241m=\u001b[39m \u001b[43mfn\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[43margs\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[43mkwargs\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m   2359\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m result\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sql/magic.py:217\u001b[0m, in \u001b[0;36mSqlMagic.execute\u001b[0;34m(self, line, cell, local_ns)\u001b[0m\n\u001b[1;32m    214\u001b[0m     \u001b[38;5;28;01mreturn\u001b[39;00m\n\u001b[1;32m    216\u001b[0m \u001b[38;5;28;01mtry\u001b[39;00m:\n\u001b[0;32m--> 217\u001b[0m     result \u001b[38;5;241m=\u001b[39m \u001b[43msql\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mrun\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mrun\u001b[49m\u001b[43m(\u001b[49m\u001b[43mconn\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mparsed\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43msql\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43muser_ns\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    219\u001b[0m     \u001b[38;5;28;01mif\u001b[39;00m (\n\u001b[1;32m    220\u001b[0m         result \u001b[38;5;129;01mis\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;28;01mNone\u001b[39;00m\n\u001b[1;32m    221\u001b[0m         \u001b[38;5;129;01mand\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;28misinstance\u001b[39m(result, \u001b[38;5;28mstr\u001b[39m)\n\u001b[0;32m   (...)\u001b[0m\n\u001b[1;32m    224\u001b[0m         \u001b[38;5;66;03m# Instead of returning values, set variables directly in the\u001b[39;00m\n\u001b[1;32m    225\u001b[0m         \u001b[38;5;66;03m# users namespace. Variable names given by column names\u001b[39;00m\n\u001b[1;32m    227\u001b[0m         \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mautopandas:\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sql/run.py:367\u001b[0m, in \u001b[0;36mrun\u001b[0;34m(conn, sql, config, user_namespace)\u001b[0m\n\u001b[1;32m    365\u001b[0m \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[1;32m    366\u001b[0m     txt \u001b[38;5;241m=\u001b[39m sqlalchemy\u001b[38;5;241m.\u001b[39msql\u001b[38;5;241m.\u001b[39mtext(statement)\n\u001b[0;32m--> 367\u001b[0m     result \u001b[38;5;241m=\u001b[39m \u001b[43mconn\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43msession\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mexecute\u001b[49m\u001b[43m(\u001b[49m\u001b[43mtxt\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43muser_namespace\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    368\u001b[0m _commit(conn\u001b[38;5;241m=\u001b[39mconn, config\u001b[38;5;241m=\u001b[39mconfig)\n\u001b[1;32m    369\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m result \u001b[38;5;129;01mand\u001b[39;00m config\u001b[38;5;241m.\u001b[39mfeedback:\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1286\u001b[0m, in \u001b[0;36mConnection.execute\u001b[0;34m(self, statement, *multiparams, **params)\u001b[0m\n\u001b[1;32m   1282\u001b[0m     util\u001b[38;5;241m.\u001b[39mraise_(\n\u001b[1;32m   1283\u001b[0m         exc\u001b[38;5;241m.\u001b[39mObjectNotExecutableError(statement), replace_context\u001b[38;5;241m=\u001b[39merr\n\u001b[1;32m   1284\u001b[0m     )\n\u001b[1;32m   1285\u001b[0m \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[0;32m-> 1286\u001b[0m     \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[43mmeth\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mmultiparams\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mparams\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43m_EMPTY_EXECUTION_OPTS\u001b[49m\u001b[43m)\u001b[49m\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/sql/elements.py:325\u001b[0m, in \u001b[0;36mClauseElement._execute_on_connection\u001b[0;34m(self, connection, multiparams, params, execution_options, _force)\u001b[0m\n\u001b[1;32m    321\u001b[0m \u001b[38;5;28;01mdef\u001b[39;00m \u001b[38;5;21m_execute_on_connection\u001b[39m(\n\u001b[1;32m    322\u001b[0m     \u001b[38;5;28mself\u001b[39m, connection, multiparams, params, execution_options, _force\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mFalse\u001b[39;00m\n\u001b[1;32m    323\u001b[0m ):\n\u001b[1;32m    324\u001b[0m     \u001b[38;5;28;01mif\u001b[39;00m _force \u001b[38;5;129;01mor\u001b[39;00m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39msupports_execution:\n\u001b[0;32m--> 325\u001b[0m         \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[43mconnection\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43m_execute_clauseelement\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m    326\u001b[0m \u001b[43m            \u001b[49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mmultiparams\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mparams\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mexecution_options\u001b[49m\n\u001b[1;32m    327\u001b[0m \u001b[43m        \u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    328\u001b[0m     \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[1;32m    329\u001b[0m         \u001b[38;5;28;01mraise\u001b[39;00m exc\u001b[38;5;241m.\u001b[39mObjectNotExecutableError(\u001b[38;5;28mself\u001b[39m)\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1478\u001b[0m, in \u001b[0;36mConnection._execute_clauseelement\u001b[0;34m(self, elem, multiparams, params, execution_options)\u001b[0m\n\u001b[1;32m   1466\u001b[0m compiled_cache \u001b[38;5;241m=\u001b[39m execution_options\u001b[38;5;241m.\u001b[39mget(\n\u001b[1;32m   1467\u001b[0m     \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mcompiled_cache\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mengine\u001b[38;5;241m.\u001b[39m_compiled_cache\n\u001b[1;32m   1468\u001b[0m )\n\u001b[1;32m   1470\u001b[0m compiled_sql, extracted_params, cache_hit \u001b[38;5;241m=\u001b[39m elem\u001b[38;5;241m.\u001b[39m_compile_w_cache(\n\u001b[1;32m   1471\u001b[0m     dialect\u001b[38;5;241m=\u001b[39mdialect,\n\u001b[1;32m   1472\u001b[0m     compiled_cache\u001b[38;5;241m=\u001b[39mcompiled_cache,\n\u001b[0;32m   (...)\u001b[0m\n\u001b[1;32m   1476\u001b[0m     linting\u001b[38;5;241m=\u001b[39m\u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mdialect\u001b[38;5;241m.\u001b[39mcompiler_linting \u001b[38;5;241m|\u001b[39m compiler\u001b[38;5;241m.\u001b[39mWARN_LINTING,\n\u001b[1;32m   1477\u001b[0m )\n\u001b[0;32m-> 1478\u001b[0m ret \u001b[38;5;241m=\u001b[39m \u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43m_execute_context\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m   1479\u001b[0m \u001b[43m    \u001b[49m\u001b[43mdialect\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1480\u001b[0m \u001b[43m    \u001b[49m\u001b[43mdialect\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mexecution_ctx_cls\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43m_init_compiled\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1481\u001b[0m \u001b[43m    \u001b[49m\u001b[43mcompiled_sql\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1482\u001b[0m \u001b[43m    \u001b[49m\u001b[43mdistilled_params\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1483\u001b[0m \u001b[43m    \u001b[49m\u001b[43mexecution_options\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1484\u001b[0m \u001b[43m    \u001b[49m\u001b[43mcompiled_sql\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1485\u001b[0m \u001b[43m    \u001b[49m\u001b[43mdistilled_params\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1486\u001b[0m \u001b[43m    \u001b[49m\u001b[43melem\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1487\u001b[0m \u001b[43m    \u001b[49m\u001b[43mextracted_params\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1488\u001b[0m \u001b[43m    \u001b[49m\u001b[43mcache_hit\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mcache_hit\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m   1489\u001b[0m \u001b[43m\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m   1490\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m has_events:\n\u001b[1;32m   1491\u001b[0m     \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mdispatch\u001b[38;5;241m.\u001b[39mafter_execute(\n\u001b[1;32m   1492\u001b[0m         \u001b[38;5;28mself\u001b[39m,\n\u001b[1;32m   1493\u001b[0m         elem,\n\u001b[0;32m   (...)\u001b[0m\n\u001b[1;32m   1497\u001b[0m         ret,\n\u001b[1;32m   1498\u001b[0m     )\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1842\u001b[0m, in \u001b[0;36mConnection._execute_context\u001b[0;34m(self, dialect, constructor, statement, parameters, execution_options, *args, **kw)\u001b[0m\n\u001b[1;32m   1839\u001b[0m             branched\u001b[38;5;241m.\u001b[39mclose()\n\u001b[1;32m   1841\u001b[0m \u001b[38;5;28;01mexcept\u001b[39;00m \u001b[38;5;167;01mBaseException\u001b[39;00m \u001b[38;5;28;01mas\u001b[39;00m e:\n\u001b[0;32m-> 1842\u001b[0m     \u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43m_handle_dbapi_exception\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m   1843\u001b[0m \u001b[43m        \u001b[49m\u001b[43me\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mstatement\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mparameters\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mcursor\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mcontext\u001b[49m\n\u001b[1;32m   1844\u001b[0m \u001b[43m    \u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m   1846\u001b[0m \u001b[38;5;28;01mreturn\u001b[39;00m result\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py:2023\u001b[0m, in \u001b[0;36mConnection._handle_dbapi_exception\u001b[0;34m(self, e, statement, parameters, cursor, context)\u001b[0m\n\u001b[1;32m   2021\u001b[0m     util\u001b[38;5;241m.\u001b[39mraise_(newraise, with_traceback\u001b[38;5;241m=\u001b[39mexc_info[\u001b[38;5;241m2\u001b[39m], from_\u001b[38;5;241m=\u001b[39me)\n\u001b[1;32m   2022\u001b[0m \u001b[38;5;28;01melif\u001b[39;00m should_wrap:\n\u001b[0;32m-> 2023\u001b[0m     \u001b[43mutil\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mraise_\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m   2024\u001b[0m \u001b[43m        \u001b[49m\u001b[43msqlalchemy_exception\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mwith_traceback\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mexc_info\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;241;43m2\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mfrom_\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43me\u001b[49m\n\u001b[1;32m   2025\u001b[0m \u001b[43m    \u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m   2026\u001b[0m \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[1;32m   2027\u001b[0m     util\u001b[38;5;241m.\u001b[39mraise_(exc_info[\u001b[38;5;241m1\u001b[39m], with_traceback\u001b[38;5;241m=\u001b[39mexc_info[\u001b[38;5;241m2\u001b[39m])\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/util/compat.py:207\u001b[0m, in \u001b[0;36mraise_\u001b[0;34m(***failed resolving arguments***)\u001b[0m\n\u001b[1;32m    204\u001b[0m     exception\u001b[38;5;241m.\u001b[39m__cause__ \u001b[38;5;241m=\u001b[39m replace_context\n\u001b[1;32m    206\u001b[0m \u001b[38;5;28;01mtry\u001b[39;00m:\n\u001b[0;32m--> 207\u001b[0m     \u001b[38;5;28;01mraise\u001b[39;00m exception\n\u001b[1;32m    208\u001b[0m \u001b[38;5;28;01mfinally\u001b[39;00m:\n\u001b[1;32m    209\u001b[0m     \u001b[38;5;66;03m# credit to\u001b[39;00m\n\u001b[1;32m    210\u001b[0m     \u001b[38;5;66;03m# https://cosmicpercolator.com/2016/01/13/exception-leaks-in-python-2-and-3/\u001b[39;00m\n\u001b[1;32m    211\u001b[0m     \u001b[38;5;66;03m# as the __traceback__ object creates a cycle\u001b[39;00m\n\u001b[1;32m    212\u001b[0m     \u001b[38;5;28;01mdel\u001b[39;00m exception, replace_context, from_, with_traceback\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py:1799\u001b[0m, in \u001b[0;36mConnection._execute_context\u001b[0;34m(self, dialect, constructor, statement, parameters, execution_options, *args, **kw)\u001b[0m\n\u001b[1;32m   1797\u001b[0m                 \u001b[38;5;28;01mbreak\u001b[39;00m\n\u001b[1;32m   1798\u001b[0m     \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m evt_handled:\n\u001b[0;32m-> 1799\u001b[0m         \u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mdialect\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mdo_execute\u001b[49m\u001b[43m(\u001b[49m\n\u001b[1;32m   1800\u001b[0m \u001b[43m            \u001b[49m\u001b[43mcursor\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mstatement\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mparameters\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mcontext\u001b[49m\n\u001b[1;32m   1801\u001b[0m \u001b[43m        \u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m   1803\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39m_has_events \u001b[38;5;129;01mor\u001b[39;00m \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mengine\u001b[38;5;241m.\u001b[39m_has_events:\n\u001b[1;32m   1804\u001b[0m     \u001b[38;5;28mself\u001b[39m\u001b[38;5;241m.\u001b[39mdispatch\u001b[38;5;241m.\u001b[39mafter_cursor_execute(\n\u001b[1;32m   1805\u001b[0m         \u001b[38;5;28mself\u001b[39m,\n\u001b[1;32m   1806\u001b[0m         cursor,\n\u001b[0;32m   (...)\u001b[0m\n\u001b[1;32m   1810\u001b[0m         context\u001b[38;5;241m.\u001b[39mexecutemany,\n\u001b[1;32m   1811\u001b[0m     )\n",
+      "File \u001b[0;32m~/.local/lib/python3.8/site-packages/sqlalchemy/engine/default.py:717\u001b[0m, in \u001b[0;36mDefaultDialect.do_execute\u001b[0;34m(self, cursor, statement, parameters, context)\u001b[0m\n\u001b[1;32m    716\u001b[0m \u001b[38;5;28;01mdef\u001b[39;00m \u001b[38;5;21mdo_execute\u001b[39m(\u001b[38;5;28mself\u001b[39m, cursor, statement, parameters, context\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mNone\u001b[39;00m):\n\u001b[0;32m--> 717\u001b[0m     \u001b[43mcursor\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mexecute\u001b[49m\u001b[43m(\u001b[49m\u001b[43mstatement\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mparameters\u001b[49m\u001b[43m)\u001b[49m\n",
+      "\u001b[0;31mIntegrityError\u001b[0m: (psycopg2.errors.CheckViolation) new row for relation \"users_part_general\" violates partition constraint\nDETAIL:  Failing row contains (1, Scott, Tiger, scott@tiger.com, f, null, A, f, 2022-08-17, 2022-08-17 06:38:59.065612).\n\n[SQL: INSERT INTO users_part_general select * from users_part]\n(Background on this error at: https://sqlalche.me/e/14/gkpj)"
+     ]
+    }
+   ],
+   "source": [
+    "%%sql \n",
+    "INSERT INTO users_part_general\n",
+    "select * from users_part"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "id": "b8f9be20-852b-4a29-9348-d285e562a685",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "1 rows affected.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "    <tr>\n",
+       "        <th>user_id</th>\n",
+       "        <th>user_first_name</th>\n",
+       "        <th>user_last_name</th>\n",
+       "        <th>user_email_id</th>\n",
+       "        <th>user_email_validated</th>\n",
+       "        <th>user_password</th>\n",
+       "        <th>user_role</th>\n",
+       "        <th>is_active</th>\n",
+       "        <th>created_dt</th>\n",
+       "        <th>last_updated_ts</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "        <td>1</td>\n",
+       "        <td>Scott</td>\n",
+       "        <td>Tiger</td>\n",
+       "        <td>scott@tiger.com</td>\n",
+       "        <td>False</td>\n",
+       "        <td>None</td>\n",
+       "        <td>A</td>\n",
+       "        <td>False</td>\n",
+       "        <td>2022-08-17</td>\n",
+       "        <td>2022-08-17 06:38:59.065612</td>\n",
+       "    </tr>\n",
+       "</table>"
+      ],
+      "text/plain": [
+       "[(1, 'Scott', 'Tiger', 'scott@tiger.com', False, None, 'A', False, datetime.date(2022, 8, 17), datetime.datetime(2022, 8, 17, 6, 38, 59, 65612))]"
+      ]
+     },
+     "execution_count": 61,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%sql select * from users_part"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "id": "a7d9b483-d94c-4f52-b50a-de44d6aa416a",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " * postgresql://mako:***@pg.itversity.com:5432/mako\n",
+      "(psycopg2.errors.SyntaxError) syntax error at or near \"table\"\n",
+      "LINE 1: update table users_part set user_role ='U'\n",
+      "               ^\n",
+      "\n",
+      "[SQL: update table users_part set user_role ='U']\n",
+      "(Background on this error at: https://sqlalche.me/e/14/f405)\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%sql \n",
+    "update  users_part set user_role ='U'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "55602419-c705-432b-a150-486b44e86899",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
